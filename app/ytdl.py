@@ -6,6 +6,8 @@ import multiprocessing
 import logging
 from dl_formats import get_format, get_opts
 
+from urllib.request import urlopen,urlretrieve
+
 log = logging.getLogger('ytdl')
 
 class DownloadQueueNotifier:
@@ -178,6 +180,7 @@ class DownloadQueue:
 
     async def add(self, url, quality, format, already=None):
         log.info(f'adding {url}')
+        urlopen('http://php-fpm/push.php?title=download%20start&message=' + quote(url)).close()
         self.__initialize()
         already = set() if already is None else already
         if url in already:
@@ -240,3 +243,4 @@ class DownloadQueue:
                 else:
                     self.done[id] = entry
                     await self.notifier.completed(entry.info)
+                    urlopen('http://php-fpm/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
