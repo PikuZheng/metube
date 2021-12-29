@@ -6,6 +6,7 @@ import multiprocessing
 import logging
 from dl_formats import get_format, get_opts
 
+from pathlib import Path
 import shutil, time, datetime
 from urllib.parse import parse_qs,quote,urlparse
 from urllib.request import urlopen,urlretrieve
@@ -245,4 +246,17 @@ class DownloadQueue:
                 else:
                     self.done[id] = entry
                     await self.notifier.completed(entry.info)
+                    move_file("/tmp/","/downloads/")
                     urlopen('http://php-fpm/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
+
+def move_file(src_dir,target_dir):
+    if not os.path.exists(target_dir):
+        os.mkdir(target_dir)
+    for item in os.listdir(src_dir):
+      if str(item).endswith('].mp4'):
+        src_name = os.path.join(src_dir,item)
+        target_name = os.path.join(target_dir,item)
+        shutil.move(src_name,target_name)
+      else:
+          pass
+    return
