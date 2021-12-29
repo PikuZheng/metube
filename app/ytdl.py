@@ -6,6 +6,8 @@ import multiprocessing
 import logging
 from dl_formats import get_format, get_opts
 
+import shutil, time, datetime
+from urllib.parse import parse_qs,quote,urlparse
 from urllib.request import urlopen,urlretrieve
 
 log = logging.getLogger('ytdl')
