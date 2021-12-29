@@ -16,7 +16,7 @@ class Config:
     _DEFAULTS = {
         'DOWNLOAD_DIR': '.',
         'AUDIO_DOWNLOAD_DIR': '%%DOWNLOAD_DIR',
-        'URL_PREFIX': '',
+        'URL_PREFIX': '/ytdl',
         'OUTPUT_TEMPLATE': '%(title)s.%(ext)s',
         'YTDL_OPTIONS': '{}',
     }
@@ -99,9 +99,9 @@ def index(request):
     return web.FileResponse('ui/dist/metube/index.html')
 
 if config.URL_PREFIX != '/':
-    @routes.get('/')
-    def index_redirect_root(request):
-        return web.HTTPFound(config.URL_PREFIX)
+#    @routes.get('/')
+#    def index_redirect_root(request):
+#        return web.HTTPFound(config.URL_PREFIX)
 
     @routes.get(config.URL_PREFIX[:-1])
     def index_redirect_dir(request):
