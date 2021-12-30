@@ -77,6 +77,8 @@ async def add(request):
     if not url or not quality:
         raise web.HTTPBadRequest()
     format = post.get('format')
+    if not format:
+        format = 'mp4'
     status = await dqueue.add(url, quality, format)
     return web.Response(text=serializer.encode(status))
 
