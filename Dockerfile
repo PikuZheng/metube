@@ -24,7 +24,7 @@ COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
 RUN chmod -R 755 ./app
-RUN chmod -R 644 ./favicon
+RUN chmod -R 755 ./favicon
 RUN mkdir ../.cache
 RUN chmod 777 ../.cache
 
