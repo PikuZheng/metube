@@ -25,7 +25,7 @@ COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
 RUN chmod -R 755 ./app
 RUN mkdir ../.cache
-
+RUN chmod 777 ../.cache
 
 ENV DOWNLOAD_DIR /downloads
 VOLUME /downloads
