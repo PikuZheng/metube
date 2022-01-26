@@ -1,9 +1,9 @@
-FROM node as builder
+FROM node:lts-alpine as builder
 
 WORKDIR /metube
 COPY ui ./
 RUN npm ci && \
-    NODE_OPTIONS=--openssl-legacy-provider node_modules/.bin/ng build --prod
+    node_modules/.bin/ng build --prod
 
 
 FROM python:3.8-alpine
@@ -29,6 +29,7 @@ RUN mkdir ../.cache
 RUN chmod 777 ../.cache
 
 ENV DOWNLOAD_DIR /downloads
+ENV STATE_DIR /downloads/.metube
 VOLUME /downloads
 EXPOSE 8081
 CMD ["python3", "app/main.py"]
