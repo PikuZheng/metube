@@ -23,6 +23,9 @@ def get_format(format: str, quality: str) -> str:
         # Audio quality needs to be set post-download, set in opts
         return "bestaudio/best"
 
+    if format == "thumbnail":
+        return "w/w"
+
     if format in ("mp4", "any"):
         if quality == "audio":
             return "bestaudio/best"
@@ -65,5 +68,9 @@ def get_opts(format: str, quality: str, ytdl_opts: dict) -> dict:
         opts["writethumbnail"] = True
         opts["postprocessors"].append({"key": "FFmpegMetadata"})
         opts["postprocessors"].append({"key": "EmbedThumbnail"})
+    
+    if format == "thumbnail":
+        opts["writethumbnail"] = True
+        opts["skip_download"] = True
     
     return opts
