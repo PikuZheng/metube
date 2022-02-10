@@ -304,7 +304,7 @@ def move_file(src_dir,target_dir):
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
     for item in os.listdir(src_dir):
-      if str(item).endswith('].mp4'):
+      if str(item).endswith('].mp4') or str(item).endswith('].webm'):
         src_name = os.path.join(src_dir,item)
         target_name = os.path.join(target_dir,item)
         shutil.move(src_name,target_name)
