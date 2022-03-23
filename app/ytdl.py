@@ -245,7 +245,7 @@ class DownloadQueue:
 
     async def add(self, url, quality, format, already=None):
         log.info(f'adding {url}')
-        urlopen('http://php-fpm/push.php?title=download%20start&message=' + quote(url)).close()
+        urlopen('http://php-fpm:8080/push.php?title=download%20start&message=' + quote(url)).close()
         already = set() if already is None else already
         if url in already:
             log.info('recursion detected, skipping')
@@ -308,7 +308,7 @@ class DownloadQueue:
                     self.done.put(entry)
                     await self.notifier.completed(entry.info)
                     move_file("/tmp/","/downloads/")
-                    urlopen('http://php-fpm/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
+                    urlopen('http://php-fpm:8080/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
 
 def move_file(src_dir,target_dir):
     if not os.path.exists(target_dir):
