@@ -10,9 +10,10 @@ FROM python:3.8-alpine
 
 WORKDIR /app
 
-COPY Pipfile* ./
+COPY Pipfile* docker-entrypoint.sh ./
 
-RUN apk add --update ffmpeg && \
+RUN chmod +x docker-entrypoint.sh && \
+    apk add --update ffmpeg coreutils shadow su-exec && \
     apk add --update --virtual .build-deps gcc g++ musl-dev && \
     pip install --no-cache-dir pipenv && \
     pipenv install --system --deploy --clear && \
@@ -28,8 +29,12 @@ RUN chmod -R 755 ./favicon
 RUN mkdir ../.cache
 RUN chmod 777 ../.cache
 
+ENV UID=1000
+ENV GID=1000
+ENV UMASK=022
+
 ENV DOWNLOAD_DIR /downloads
 ENV STATE_DIR /downloads/.metube
 VOLUME /downloads
 EXPOSE 8081
-CMD ["python3", "app/main.py"]
+CMD [ "./docker-entrypoint.sh" ]

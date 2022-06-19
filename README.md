@@ -10,9 +10,8 @@ Web GUI for youtube-dl (using the [yt-dlp](https://github.com/yt-dlp/yt-dlp) for
 ## Run using Docker
 
 ```bash
-docker run -d -p 8081:8081 -v /path/to/downloads:/downloads --user 1001:1001 alexta69/metube
+docker run -d -p 8081:8081 -v /path/to/downloads:/downloads alexta69/metube
 ```
-
 ## Run using docker-compose
 
 ```yaml
@@ -22,21 +21,25 @@ services:
     image: alexta69/metube
     container_name: metube
     restart: unless-stopped
-    user: "1001:1001"
     ports:
       - "8081:8081"
     volumes:
       - /path/to/downloads:/downloads
 ```
+
 ## Configuration via environment variables
 
 Certain values can be set via environment variables, using the `-e` parameter on the docker command line, or the `environment:` section in docker-compose.
 
+* __UID__: user under which MeTube will run. Defaults to `1000`.
+* __GID__: group under which MeTube will run. Defaults to `1000`.
+* __UMASK__: umask value used by MeTube. Defaults to `022`.
 * __DOWNLOAD_DIR__: path to where the downloads will be saved. Defaults to `/downloads` in the docker image, and `.` otherwise.
 * __AUDIO_DOWNLOAD_DIR__: path to where audio-only downloads will be saved, if you wish to separate them from the video downloads. Defaults to the value of `DOWNLOAD_DIR`.
 * __STATE_DIR__: path to where the queue persistence files will be saved. Defaults to `/downloads/.metube` in the docker image, and `.` otherwise.
 * __URL_PREFIX__: base path for the web server (for use when hosting behind a reverse proxy). Defaults to `/`.
 * __OUTPUT_TEMPLATE__: the template for the filenames of the downloaded videos, formatted according to [this spec](https://github.com/yt-dlp/yt-dlp/blob/master/README.md#output-template). Defaults to `%(title)s.%(ext)s`.
+* __OUTPUT_TEMPLATE_CHAPTER__: the template for the filenames of the downloaded videos, when split into chapters via postprocessors. Defaults to `%(title)s - %(section_number)s %(section_title)s.%(ext)s`.
 * __YTDL_OPTIONS__: Additional options to pass to youtube-dl, in JSON format. [See available options here](https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L176). They roughly correspond to command-line options, though some do not have exact equivalents here, for example `--recode-video` has to be specified via `postprocessors`. Also note that dashes are replaced with underscores.
 
 The following example value for `YTDL_OPTIONS` embeds English subtitles and chapter markers (for videos that have them), and also changes the permissions on the downloaded video:
