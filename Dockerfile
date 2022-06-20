@@ -24,10 +24,11 @@ RUN chmod +x docker-entrypoint.sh && \
 COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
-RUN chmod -R 755 ./app
-RUN chmod -R 755 ./favicon
-RUN mkdir ../.cache
-RUN chmod 777 ../.cache
+RUN chmod -R 755 ./app && \
+    chmod -R 755 ./favicon && \
+    mkdir ../.cache && \
+    chmod 777 ../.cache && \
+    chmod 755 ./docker-entrypoint.sh
 
 ENV UID=1000
 ENV GID=1000
