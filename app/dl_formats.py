@@ -24,7 +24,7 @@ def get_format(format: str, quality: str) -> str:
         return "bestaudio/best"
 
     if format == "thumbnail":
-        return "jpg"
+        return "w/w"
 
     if format in ("mp4", "any"):
         if quality == "audio":
