@@ -24,7 +24,7 @@ def get_format(format: str, quality: str) -> str:
         return "bestaudio/best"
 
     if format == "thumbnail":
-        return "w/w"
+        return "jpg"
 
     if format in ("mp4", "any"):
         if quality == "audio":
@@ -72,5 +72,6 @@ def get_opts(format: str, quality: str, ytdl_opts: dict) -> dict:
     if format == "thumbnail":
         opts["writethumbnail"] = True
         opts["skip_download"] = True
+        opts["postprocessors"].append({"key": "FFmpegThumbnailsConvertor", "format": "jpg", "when": "before_dl"})
     
     return opts
