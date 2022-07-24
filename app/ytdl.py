@@ -46,7 +46,7 @@ class Download:
     def __init__(self, download_dir, output_template, output_template_chapter, quality, format, ytdl_opts, info):
         self.download_dir = download_dir
         if format == "thumbnail":
-          self.output_template = output_template+".jpg"
+          self.output_template = output_template.replace(".%(ext)s", ".jpg");
         else:
           self.output_template = output_template
         self.output_template_chapter = output_template_chapter
@@ -320,7 +320,7 @@ def move_file(src_dir,target_dir):
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
     for item in os.listdir(src_dir):
-      if str(item).endswith('].mp4') or str(item).endswith('].webm') or str(item).endswith('].webp') or str(item).endswith('].jpg'):
+      if str(item).endswith('].mp4') or str(item).endswith('].webm') or str(item).endswith('.jpg'):
         src_name = os.path.join(src_dir,item)
         target_name = os.path.join(target_dir,item)
         shutil.move(src_name,target_name)
