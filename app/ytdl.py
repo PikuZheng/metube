@@ -45,7 +45,10 @@ class Download:
 
     def __init__(self, download_dir, output_template, output_template_chapter, quality, format, ytdl_opts, info):
         self.download_dir = download_dir
-        self.output_template = output_template
+        if format == "thumbnail":
+          self.output_template = output_template+".jpg"
+        else:
+          self.output_template = output_template
         self.output_template_chapter = output_template_chapter
         self.format = get_format(format, quality)
         self.ytdl_opts = get_opts(format, quality, ytdl_opts)
