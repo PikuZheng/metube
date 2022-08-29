@@ -13,7 +13,7 @@ WORKDIR /app
 COPY Pipfile* docker-entrypoint.sh ./
 
 RUN chmod +x docker-entrypoint.sh && \
-    apk add --update ffmpeg aria2 coreutils shadow su-exec && \
+    apk add --update aria2 coreutils shadow su-exec && \
     apk add --update --virtual .build-deps gcc g++ musl-dev && \
     pip install --no-cache-dir pipenv && \
     pipenv install --system --deploy --clear && \
@@ -24,6 +24,8 @@ RUN chmod +x docker-entrypoint.sh && \
 COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
+COPY --from=mwader/static-ffmpeg:5.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.1 /ffprobe /usr/local/bin/
 
 ENV UID=1000
 ENV GID=1000
