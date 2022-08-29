@@ -27,6 +27,12 @@ COPY --from=builder /metube/dist/metube ./ui/dist/metube
 COPY --from=mwader/static-ffmpeg:5.1 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:5.1 /ffprobe /usr/local/bin/
 
+RUN chmod -R 755 ./app && \
+    chmod -R 755 ./favicon && \
+    mkdir ../.cache && \
+    chmod 777 ../.cache && \
+    chmod 755 ./docker-entrypoint.sh
+
 ENV UID=1000
 ENV GID=1000
 ENV UMASK=022

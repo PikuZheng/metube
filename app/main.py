@@ -17,7 +17,7 @@ class Config:
         'DOWNLOAD_DIR': '.',
         'AUDIO_DOWNLOAD_DIR': '%%DOWNLOAD_DIR',
         'STATE_DIR': '.',
-        'URL_PREFIX': '',
+        'URL_PREFIX': '/ytdl',
         'OUTPUT_TEMPLATE': '%(title)s.%(ext)s',
         'OUTPUT_TEMPLATE_CHAPTER': '%(title)s - %(section_number)s %(section_title)s.%(ext)s',
         'YTDL_OPTIONS': '{}',
@@ -80,6 +80,8 @@ async def add(request):
     if not url or not quality:
         raise web.HTTPBadRequest()
     format = post.get('format')
+    if not format:
+        format = 'mp4'
     status = await dqueue.add(url, quality, format)
     return web.Response(text=serializer.encode(status))
 
@@ -102,9 +104,9 @@ def index(request):
     return web.FileResponse('ui/dist/metube/index.html')
 
 if config.URL_PREFIX != '/':
-    @routes.get('/')
-    def index_redirect_root(request):
-        return web.HTTPFound(config.URL_PREFIX)
+#    @routes.get('/')
+#    def index_redirect_root(request):
+#        return web.HTTPFound(config.URL_PREFIX)
 
     @routes.get(config.URL_PREFIX[:-1])
     def index_redirect_dir(request):
@@ -134,4 +136,4 @@ app.on_response_prepare.append(on_prepare)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    web.run_app(app, port=8081)
+    web.run_app(app, port=8090)

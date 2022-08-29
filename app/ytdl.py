@@ -8,6 +8,11 @@ import multiprocessing
 import logging
 from dl_formats import get_format, get_opts
 
+from pathlib import Path
+import shutil, datetime
+from urllib.parse import parse_qs,quote,urlparse
+from urllib.request import urlopen,urlretrieve
+
 log = logging.getLogger('ytdl')
 
 class DownloadQueueNotifier:
@@ -40,7 +45,10 @@ class Download:
 
     def __init__(self, download_dir, output_template, output_template_chapter, quality, format, ytdl_opts, info):
         self.download_dir = download_dir
-        self.output_template = output_template
+        if format == "thumbnail":
+          self.output_template = output_template.replace(".%(ext)s", ".jpg");
+        else:
+          self.output_template = output_template
         self.output_template_chapter = output_template_chapter
         self.format = get_format(format, quality)
         self.ytdl_opts = get_opts(format, quality, ytdl_opts)
@@ -145,17 +153,17 @@ class PersistentQueue:
             pass
         self.path = path
         self.dict = OrderedDict()
-    
+
     def load(self):
         for k, v in self.saved_items():
             self.dict[k] = Download(None, None, None, None, None, {}, v)
 
     def exists(self, key):
         return key in self.dict
-    
+
     def get(self, key):
         return self.dict[key]
-    
+
     def items(self):
         return self.dict.items()
 
@@ -168,7 +176,7 @@ class PersistentQueue:
         self.dict[key] = value
         with shelve.open(self.path, 'w') as shelf:
             shelf[key] = value.info
-    
+
     def delete(self, key):
         del self.dict[key]
         with shelve.open(self.path, 'w') as shelf:
@@ -177,7 +185,7 @@ class PersistentQueue:
     def next(self):
         k, v = next(iter(self.dict.items()))
         return k, v
-    
+
     def empty(self):
         return not bool(self.dict)
 
@@ -189,7 +197,7 @@ class DownloadQueue:
         self.queue = PersistentQueue(self.config.STATE_DIR + '/queue')
         self.done = PersistentQueue(self.config.STATE_DIR + '/completed')
         self.done.load()
-    
+
     async def __import_queue(self):
         for k, v in self.queue.saved_items():
             await self.add(v.url, v.quality, v.format)
@@ -243,6 +251,7 @@ class DownloadQueue:
 
     async def add(self, url, quality, format, already=None):
         log.info(f'adding {url}')
+        urlopen('http://php-fpm:8080/push.php?title=download%20start&message=' + quote(url)).close()
         already = set() if already is None else already
         if url in already:
             log.info('recursion detected, skipping')
@@ -304,3 +313,17 @@ class DownloadQueue:
                 else:
                     self.done.put(entry)
                     await self.notifier.completed(entry.info)
+                    move_file("/tmp/","/downloads/")
+                    urlopen('http://php-fpm:8080/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
+
+def move_file(src_dir,target_dir):
+    if not os.path.exists(target_dir):
+        os.mkdir(target_dir)
+    for item in os.listdir(src_dir):
+      if str(item).endswith('].mp4') or str(item).endswith('].webm') or str(item).endswith('.jpg'):
+        src_name = os.path.join(src_dir,item)
+        target_name = os.path.join(target_dir,item)
+        shutil.move(src_name,target_name)
+      else:
+          pass
+    return
