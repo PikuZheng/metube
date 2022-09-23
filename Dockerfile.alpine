@@ -1,0 +1,33 @@
+FROM node:lts-alpine as builder
+
+WORKDIR /metube
+COPY ui ./
+RUN npm ci && \
+    node_modules/.bin/ng build --configuration production
+
+
+FROM alpine:edge
+
+WORKDIR /app
+
+COPY Pipfile* docker-entrypoint.sh ./
+
+RUN chmod +x docker-entrypoint.sh && \
+    apk add --update --no-cache ffmpeg aria2 coreutils su-exec && \
+    apk add --update --no-cache python3 py3-pip py3-gevent py3-aiohttp py3-mutagen py3-pycryptodomex py3-websockets py3-brotli py3-certifi && \
+    pip install --no-cache-dir python_socketio yt_dlp && \
+    apk delete py3-pip
+
+COPY favicon ./favicon
+COPY app ./app
+COPY --from=builder /metube/dist/metube ./ui/dist/metube
+
+ENV UID=1000
+ENV GID=1000
+ENV UMASK=022
+
+ENV DOWNLOAD_DIR /downloads
+ENV STATE_DIR /downloads/.metube
+VOLUME /downloads
+EXPOSE 8081
+CMD [ "./docker-entrypoint.sh" ]
