@@ -85,8 +85,12 @@ async def add(request):
     format = post.get('format')
     if not format:
         format = 'mp4'
+    output = post.get('title')
+    if not output:
+        output=''
+    already=None
     folder = post.get('folder')
-    status = await dqueue.add(url, quality, format, folder)
+    status = await dqueue.add(url, quality, format, folder, already, output)
     return web.Response(text=serializer.encode(status))
 
 @routes.post(config.URL_PREFIX + 'delete')

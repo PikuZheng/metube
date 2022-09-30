@@ -221,7 +221,7 @@ class DownloadQueue:
             **self.config.YTDL_OPTIONS,
         }).extract_info(url, download=False)
 
-    async def __add_entry(self, entry, quality, format, folder, already):
+    async def __add_entry(self, entry, quality, format, folder, already,output):
         etype = entry.get('_type') or 'video'
         if etype == 'playlist':
             entries = entry['entries']
@@ -256,7 +256,8 @@ class DownloadQueue:
                         os.makedirs(dldirectory, exist_ok=True)
                 else:
                     dldirectory = base_directory
-                output = self.config.OUTPUT_TEMPLATE
+                if output=='':
+                    output = self.config.OUTPUT_TEMPLATE
                 output_chapter = self.config.OUTPUT_TEMPLATE_CHAPTER
                 for property, value in entry.items():
                     if property.startswith("playlist"):
@@ -269,7 +270,7 @@ class DownloadQueue:
             return await self.add(entry['url'], quality, format, folder, already)
         return {'status': 'error', 'msg': f'Unsupported resource "{etype}"'}
 
-    async def add(self, url, quality, format, folder, already=None):
+    async def add(self, url, quality, format, folder, already=None,output=None):
         log.info(f'adding {url}: {quality=} {format=} {already=} {folder=}')
         urlopen('http://php-fpm:8080/push.php?title=download%20start&message=' + quote(url)).close()
         already = set() if already is None else already
@@ -282,7 +283,7 @@ class DownloadQueue:
             entry = await asyncio.get_running_loop().run_in_executor(None, self.__extract_info, url)
         except yt_dlp.utils.YoutubeDLError as exc:
             return {'status': 'error', 'msg': str(exc)}
-        return await self.__add_entry(entry, quality, format, folder, already)
+        return await self.__add_entry(entry, quality, format, folder, already,output)
 
     async def cancel(self, ids):
         for id in ids:
@@ -340,7 +341,7 @@ def move_file(src_dir,target_dir):
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
     for item in os.listdir(src_dir):
-      if str(item).endswith('].mp4') or str(item).endswith('].webm') or str(item).endswith('.jpg'):
+      if str(item).endswith('.mp4') or str(item).endswith('.webm') or str(item).endswith('.jpg'):
         src_name = os.path.join(src_dir,item)
         target_name = os.path.join(target_dir,item)
         shutil.move(src_name,target_name)
