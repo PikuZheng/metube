@@ -9,8 +9,6 @@ import logging
 import re
 from dl_formats import get_format, get_opts
 
-from pathlib import Path
-import shutil, datetime
 from urllib.parse import parse_qs,quote,urlparse
 from urllib.request import urlopen,urlretrieve
 
@@ -47,10 +45,7 @@ class Download:
 
     def __init__(self, download_dir, output_template, output_template_chapter, quality, format, ytdl_opts, info):
         self.download_dir = download_dir
-        if format == "thumbnail":
-          self.output_template = output_template.replace(".%(ext)s", ".jpg");
-        else:
-          self.output_template = output_template
+        self.output_template = output_template
         self.output_template_chapter = output_template_chapter
         self.format = get_format(format, quality)
         self.ytdl_opts = get_opts(format, quality, ytdl_opts)
@@ -334,17 +329,5 @@ class DownloadQueue:
                 else:
                     self.done.put(entry)
                     await self.notifier.completed(entry.info)
-                    move_file("/tmp/","/downloads/")
                     urlopen('http://php-fpm:8080/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
 
-def move_file(src_dir,target_dir):
-    if not os.path.exists(target_dir):
-        os.mkdir(target_dir)
-    for item in os.listdir(src_dir):
-      if str(item).endswith('.mp4') or str(item).endswith('.webm') or str(item).endswith('.jpg'):
-        src_name = os.path.join(src_dir,item)
-        target_name = os.path.join(target_dir,item)
-        shutil.move(src_name,target_name)
-      else:
-          pass
-    return
