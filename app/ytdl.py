@@ -229,7 +229,7 @@ class DownloadQueue:
                 for property in ("id", "title", "uploader", "uploader_id"):
                     if property in entry:
                         etr[f"playlist_{property}"] = entry[property]
-                results.append(await self.__add_entry(etr, quality, format, folder, already))
+                results.append(await self.__add_entry(etr, quality, format, folder, already, output))
             if any(res['status'] == 'error' for res in results):
                 return {'status': 'error', 'msg': ', '.join(res['msg'] for res in results if res['status'] == 'error' and 'msg' in res)}
             return {'status': 'ok'}
@@ -253,6 +253,8 @@ class DownloadQueue:
                     dldirectory = base_directory
                 if output=='':
                     output = self.config.OUTPUT_TEMPLATE
+                if output=='':
+                    output = 'something.mp4'
                 output_chapter = self.config.OUTPUT_TEMPLATE_CHAPTER
                 for property, value in entry.items():
                     if property.startswith("playlist"):
