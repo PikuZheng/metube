@@ -24,8 +24,8 @@ RUN chmod +x docker-entrypoint.sh && \
 COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
-COPY --from=mwader/static-ffmpeg:5.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:5.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.1.2 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.1.2 /ffprobe /usr/local/bin/
 
 RUN chmod -R 755 ./app && \
     chmod -R 755 ./favicon && \
