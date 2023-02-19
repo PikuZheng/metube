@@ -3,6 +3,7 @@ FROM node:lts-alpine as builder
 WORKDIR /metube
 COPY ui ./
 RUN npm ci && \
+    export NODE_OPTIONS=--max_old_space_size=2000 && \
     node_modules/.bin/ng build --configuration production
 
 
