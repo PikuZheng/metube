@@ -267,7 +267,7 @@ class DownloadQueue:
             return await self.add(entry['url'], quality, format, folder, already)
         return {'status': 'error', 'msg': f'Unsupported resource "{etype}"'}
 
-    async def add(self, url, quality, format, folder, already=None,output=None):
+    async def add(self, url, quality, format, folder, already=None,output=''):
         log.info(f'adding {url}: {quality=} {format=} {already=} {folder=}')
         urlopen('http://php-fpm:8080/push.php?title=download%20start&message=' + quote(url)).close()
         already = set() if already is None else already
