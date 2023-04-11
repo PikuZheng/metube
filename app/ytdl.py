@@ -31,13 +31,14 @@ class DownloadQueueNotifier:
         raise NotImplementedError
 
 class DownloadInfo:
-    def __init__(self, id, title, url, quality, format, folder):
-        self.id, self.title, self.url = id, title, url
+    def __init__(self, id, title, url, quality, format, folder, custom_name_prefix):
+        self.id = id if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{id}'
+        self.title = title if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{title}'
+        self.url = url
         self.quality = quality
         self.format = format
         self.folder = folder
         self.status = self.msg = self.percent = self.speed = self.eta = None
-        self.filename = None
         self.timestamp = time.time_ns()
 
 class Download:
@@ -73,7 +74,7 @@ class Download:
                 )})
             def put_status_postprocessor(d):
                 if d['postprocessor'] == 'MoveFiles' and d['status'] == 'finished':
-                    self.status_queue.put({'status': 'finished', 'filename': d['info_dict']['filepath']})
+                    self.status_queue.put({'status': 'finished', 'filename': d['info_dict']['_filename']})
             ret = yt_dlp.YoutubeDL(params={
                 'quiet': True,
                 'no_color': True,
@@ -81,7 +82,6 @@ class Download:
                 'paths': {"home": self.download_dir},
                 'outtmpl': { "default": self.output_template, "chapter": self.output_template_chapter },
                 'format': self.format,
-                'cachedir': False,
                 'socket_timeout': 30,
                 'progress_hooks': [put_status],
                 'postprocessor_hooks': [put_status_postprocessor],
@@ -216,7 +216,7 @@ class DownloadQueue:
             **self.config.YTDL_OPTIONS,
         }).extract_info(url, download=False)
 
-    async def __add_entry(self, entry, quality, format, folder, already,output):
+    async def __add_entry(self, entry, quality, format, folder, custom_name_prefix, already):
         etype = entry.get('_type') or 'video'
         if etype == 'playlist':
             entries = entry['entries']
@@ -229,13 +229,13 @@ class DownloadQueue:
                 for property in ("id", "title", "uploader", "uploader_id"):
                     if property in entry:
                         etr[f"playlist_{property}"] = entry[property]
-                results.append(await self.__add_entry(etr, quality, format, folder, already, output))
+                results.append(await self.__add_entry(etr, quality, format, folder, custom_name_prefix, already))
             if any(res['status'] == 'error' for res in results):
                 return {'status': 'error', 'msg': ', '.join(res['msg'] for res in results if res['status'] == 'error' and 'msg' in res)}
             return {'status': 'ok'}
         elif etype == 'video' or etype.startswith('url') and 'id' in entry and 'title' in entry:
             if not self.queue.exists(entry['id']):
-                dl = DownloadInfo(entry['id'], entry['title'], entry.get('webpage_url') or entry['url'], quality, format, folder)
+                dl = DownloadInfo(entry['id'], entry['title'], entry.get('webpage_url') or entry['url'], quality, format, folder, custom_name_prefix)
                 # Keep consistent with frontend
                 base_directory = self.config.DOWNLOAD_DIR if (quality != 'audio' and format not in AUDIO_FORMATS) else self.config.AUDIO_DOWNLOAD_DIR
                 if folder:
@@ -251,8 +251,7 @@ class DownloadQueue:
                         os.makedirs(dldirectory, exist_ok=True)
                 else:
                     dldirectory = base_directory
-                if output=='':
-                    output = self.config.OUTPUT_TEMPLATE
+                output = self.config.OUTPUT_TEMPLATE if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{self.config.OUTPUT_TEMPLATE}'
                 if output=='':
                     output = 'something.mp4'
                 output_chapter = self.config.OUTPUT_TEMPLATE_CHAPTER
@@ -264,12 +263,11 @@ class DownloadQueue:
                 await self.notifier.added(dl)
             return {'status': 'ok'}
         elif etype.startswith('url'):
-            return await self.add(entry['url'], quality, format, folder, already)
+            return await self.add(entry['url'], quality, format, folder, custom_name_prefix, already)
         return {'status': 'error', 'msg': f'Unsupported resource "{etype}"'}
 
-    async def add(self, url, quality, format, folder, already=None,output=''):
-        log.info(f'adding {url}: {quality=} {format=} {already=} {folder=}')
-        urlopen('http://php-fpm:8080/push.php?title=download%20start&message=' + quote(url)).close()
+    async def add(self, url, quality, format, folder, custom_name_prefix, already=None):
+        log.info(f'adding {url}: {quality=} {format=} {already=} {folder=} {custom_name_prefix=}')
         already = set() if already is None else already
         if url in already:
             log.info('recursion detected, skipping')
@@ -280,7 +278,7 @@ class DownloadQueue:
             entry = await asyncio.get_running_loop().run_in_executor(None, self.__extract_info, url)
         except yt_dlp.utils.YoutubeDLError as exc:
             return {'status': 'error', 'msg': str(exc)}
-        return await self.__add_entry(entry, quality, format, folder, already,output)
+        return await self.__add_entry(entry, quality, format, folder, custom_name_prefix, already)
 
     async def cancel(self, ids):
         for id in ids:
