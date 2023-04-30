@@ -74,7 +74,11 @@ class Download:
                 )})
             def put_status_postprocessor(d):
                 if d['postprocessor'] == 'MoveFiles' and d['status'] == 'finished':
-                    self.status_queue.put({'status': 'finished', 'filename': d['info_dict']['_filename']})
+                    if '__finaldir' in d['info_dict']:
+                        filename = os.path.join(d['info_dict']['__finaldir'], os.path.basename(d['info_dict']['filepath']))
+                    else:
+                        filename = d['info_dict']['filepath']
+                    self.status_queue.put({'status': 'finished', 'filename': filename})
             ret = yt_dlp.YoutubeDL(params={
                 'quiet': True,
                 'no_color': True,
@@ -201,7 +205,7 @@ class DownloadQueue:
 
     async def __import_queue(self):
         for k, v in self.queue.saved_items():
-            await self.add(v.url, v.quality, v.format, folder=v.folder)
+            await self.add(v.url, v.quality, v.format, v.folder, v.custom_name_prefix)
 
     async def initialize(self):
         self.event = asyncio.Event()
