@@ -45,8 +45,9 @@ class DownloadInfo:
 class Download:
     manager = None
 
-    def __init__(self, download_dir, output_template, output_template_chapter, quality, format, ytdl_opts, info):
+    def __init__(self, download_dir, temp_dir, output_template, output_template_chapter, quality, format, ytdl_opts, info):
         self.download_dir = download_dir
+        self.temp_dir = temp_dir
         self.output_template = output_template
         self.output_template_chapter = output_template_chapter
         self.format = get_format(format, quality)
@@ -84,7 +85,7 @@ class Download:
                 'quiet': True,
                 'no_color': True,
                 #'skip_download': True,
-                'paths': {"home": self.download_dir},
+                'paths': {"home": self.download_dir, "temp": self.temp_dir},
                 'outtmpl': { "default": self.output_template, "chapter": self.output_template_chapter },
                 'format': self.format,
                 'socket_timeout': 30,
@@ -162,7 +163,7 @@ class PersistentQueue:
 
     def load(self):
         for k, v in self.saved_items():
-            self.dict[k] = Download(None, None, None, None, None, {}, v)
+            self.dict[k] = Download(None, None, None, None, None, None, {}, v)
 
     def exists(self, key):
         return key in self.dict
@@ -263,7 +264,7 @@ class DownloadQueue:
                 for property, value in entry.items():
                     if property.startswith("playlist"):
                         output = output.replace(f"%({property})s", str(value))
-                self.queue.put(Download(dldirectory, output, output_chapter, quality, format, self.config.YTDL_OPTIONS, dl))
+                self.queue.put(Download(dldirectory, self.config.TEMP_DIR, output, output_chapter, quality, format, self.config.YTDL_OPTIONS, dl))
                 self.event.set()
                 await self.notifier.added(dl)
             return {'status': 'ok'}
