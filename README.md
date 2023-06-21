@@ -35,6 +35,7 @@ Certain values can be set via environment variables, using the `-e` parameter on
 * __UID__: user under which MeTube will run. Defaults to `1000`.
 * __GID__: group under which MeTube will run. Defaults to `1000`.
 * __UMASK__: umask value used by MeTube. Defaults to `022`.
+* __DARK_MODE__: if set to `true`, the UI will be in dark mode. Defaults to `false`.
 * __DOWNLOAD_DIR__: path to where the downloads will be saved. Defaults to `/downloads` in the docker image, and `.` otherwise.
 * __AUDIO_DOWNLOAD_DIR__: path to where audio-only downloads will be saved, if you wish to separate them from the video downloads. Defaults to the value of `DOWNLOAD_DIR`.
 * __DOWNLOAD_DIRS_INDEXABLE__: if `true`, the download dirs (__DOWNLOAD_DIR__ and __AUDIO_DOWNLOAD_DIR__) are indexable on the webserver. Defaults to `false`.
@@ -83,6 +84,10 @@ Browser extensions allow right-clicking videos and sending them directly to MeTu
 __Chrome:__ contributed by [Rpsl](https://github.com/rpsl). You can install it from [Google Chrome Webstore](https://chrome.google.com/webstore/detail/metube-downloader/fbmkmdnlhacefjljljlbhkodfmfkijdh) or use developer mode and install [from sources](https://github.com/Rpsl/metube-browser-extension).
 
 __Firefox:__ contributed by [nanocortex](https://github.com/nanocortex). You can install it from [Firefox Addons](https://addons.mozilla.org/en-US/firefox/addon/metube-downloader) or get sources from [here](https://github.com/nanocortex/metube-firefox-addon).
+
+## iOS Shortcut
+
+[rithask](https://github.com/rithask) has created an iOS shortcut to send the URL to MeTube from Safari. Initially, you'll need to enter the server address and port, but after that, it will be saved and you can just run the shortcut from the share menu in Safari. The address should include the protocol (http/https) and the port, if it's not the default 80/443. For example: `https://metube.example.com` or `http://192.168.1.1:8081`. The shortcut can be found [here](https://www.icloud.com/shortcuts/f1548df15b734418a77a709103bc1dd5).
 
 ## Bookmarklet
 
