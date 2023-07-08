@@ -17,7 +17,7 @@ COPY Pipfile* docker-entrypoint.sh ./
 # Install dependencies
 RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     chmod +x docker-entrypoint.sh && \
-    apk add --update ffmpeg aria2 coreutils shadow su-exec curl && \
+    apk add --update aria2 coreutils shadow su-exec curl && \
     apk add --update --virtual .build-deps gcc g++ musl-dev && \
     pip install --no-cache-dir pipenv && \
     pipenv install --system --deploy --clear && \
@@ -29,6 +29,8 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
 COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
+COPY --from=mwader/static-ffmpeg:6.0 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:6.0 /ffprobe /usr/local/bin/
 
 RUN chmod -R 755 ./app && \
     chmod -R 755 ./favicon && \
