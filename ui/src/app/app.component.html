@@ -94,7 +94,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let download of downloads.queue | keyvalue: asIsOrder" [class.disabled]='download.value.deleting'>
+      <tr *ngFor="let download of downloads.queue | keyvalue: asIsOrder; trackBy: identifyDownloadRow" [class.disabled]='download.value.deleting'>
         <td>
           <app-slave-checkbox [id]="download.key" [master]="queueMasterCheckbox" [checkable]="download.value"></app-slave-checkbox>
         </td>
@@ -127,7 +127,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let download of downloads.done | keyvalue: asIsOrder" [class.disabled]='download.value.deleting'>
+      <tr *ngFor="let download of downloads.done | keyvalue: asIsOrder; trackBy: identifyDownloadRow" [class.disabled]='download.value.deleting'>
         <td>
           <app-slave-checkbox [id]="download.key" [master]="doneMasterCheckbox" [checkable]="download.value"></app-slave-checkbox>
         </td>
@@ -140,7 +140,7 @@
           <ng-template #noDownloadLink>{{ download.value.title }}</ng-template>
         </td>
         <td>
-          <button *ngIf="download.value.status == 'error'" type="button" class="btn btn-link" (click)="retryDownload(download.key, download.value.url, download.value.quality, download.value.folder)"><fa-icon [icon]="faRedoAlt"></fa-icon></button>
+          <button *ngIf="download.value.status == 'error'" type="button" class="btn btn-link" (click)="retryDownload(download.key, download.value)"><fa-icon [icon]="faRedoAlt"></fa-icon></button>
         </td>
         <td>
           <a *ngIf="!!download.value.filename; else noDownloadLink" href="{{buildDownloadLink(download.value)}}" download><fa-icon [icon]="faDownload"></fa-icon></a>
