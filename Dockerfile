@@ -26,7 +26,6 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     rm -rf /var/cache/apk/* && \
     mkdir /.cache && chmod 777 /.cache
 
-COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
 COPY --from=mwader/static-ffmpeg:6.0 /ffmpeg /usr/local/bin/
