@@ -32,7 +32,6 @@ COPY --from=mwader/static-ffmpeg:6.0 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:6.0 /ffprobe /usr/local/bin/
 
 RUN chmod -R 755 ./app && \
-    chmod -R 755 ./favicon && \
     chmod 755 ./docker-entrypoint.sh
 
 ENV UID=1000
