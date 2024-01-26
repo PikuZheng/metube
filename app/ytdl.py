@@ -42,6 +42,7 @@ class DownloadInfo:
         self.custom_name_prefix = custom_name_prefix
         self.msg = self.percent = self.speed = self.eta = None
         self.status = "pending"
+        self.size = None
         self.timestamp = time.time_ns()
         self.error = error
 
@@ -141,7 +142,9 @@ class Download:
                 return
             self.tmpfilename = status.get('tmpfilename')
             if 'filename' in status:
-                self.info.filename = os.path.relpath(status.get('filename'), self.download_dir)
+                fileName = status.get('filename')
+                self.info.filename = os.path.relpath(fileName, self.download_dir)
+                self.info.size = os.path.getsize(fileName) if os.path.exists(fileName) else None
 
                 # Set correct file extension for thumbnails
                 if(self.info.format == 'thumbnail'):
@@ -331,6 +334,10 @@ class DownloadQueue:
 
     async def cancel(self, ids):
         for id in ids:
+            if self.pending.exists(id):
+                self.pending.delete(id)
+                await self.notifier.canceled(id)
+                continue
             if not self.queue.exists(id):
                 log.warn(f'requested cancel for non-existent download {id}')
                 continue
