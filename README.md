@@ -1,5 +1,7 @@
 # MeTube
 
+> **_NOTE:_**  32-bit ARM builds have been retired (a full year after [other major players](https://www.linuxserver.io/blog/a-farewell-to-arm-hf)), as new Node versions don't support them, and continued security updates and dependencies require new Node versions. Please migrate to a 64-bit OS to continue receiving MeTube upgrades.
+
 ![Build Status](https://github.com/alexta69/metube/actions/workflows/main.yml/badge.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/alexta69/metube.svg)
 
@@ -109,7 +111,7 @@ __Firefox:__ contributed by [nanocortex](https://github.com/nanocortex). You can
 GitHub doesn't allow embedding JavaScript as a link, so the bookmarklet has to be created manually by copying the following code to a new bookmark you create on your bookmarks bar. Change the hostname in the URL below to point to your MeTube instance.
 
 ```javascript
-javascript:!function(){xhr=new XMLHttpRequest();xhr.open("POST","https://metube.domain.com/add");xhr.send(JSON.stringify({"url":document.location.href,"quality":"best"}));xhr.onload=function(){if(xhr.status==200){alert("Sent to metube!")}else{alert("Send to metube failed. Check the javascript console for clues.")}}}();
+javascript:!function(){xhr=new XMLHttpRequest();xhr.open("POST","https://metube.domain.com/add");xhr.withCredentials=true;xhr.send(JSON.stringify({"url":document.location.href,"quality":"best"}));xhr.onload=function(){if(xhr.status==200){alert("Sent to metube!")}else{alert("Send to metube failed. Check the javascript console for clues.")}}}();
 ```
 
 [shoonya75](https://github.com/shoonya75) has contributed a Firefox version:
