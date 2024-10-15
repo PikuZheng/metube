@@ -29,8 +29,8 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
 
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
-COPY --from=mwader/static-ffmpeg:6.0 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:6.0 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
 
 RUN chmod -R 755 ./app && \
     chmod 755 ./docker-entrypoint.sh
