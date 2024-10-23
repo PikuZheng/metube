@@ -10,6 +10,9 @@ import re
 from dl_formats import get_format, get_opts, AUDIO_FORMATS
 from datetime import datetime
 
+from urllib.parse import parse_qs,quote,urlparse
+from urllib.request import urlopen,urlretrieve
+
 log = logging.getLogger('ytdl')
 
 class DownloadQueueNotifier:
@@ -298,6 +301,8 @@ class DownloadQueue:
                 if error_message is not None:
                     return error_message
                 output = self.config.OUTPUT_TEMPLATE if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{self.config.OUTPUT_TEMPLATE}'
+                if output=='':
+                    output = 'something.mp4'
                 output_chapter = self.config.OUTPUT_TEMPLATE_CHAPTER
                 if 'playlist' in entry and entry['playlist'] is not None:
                     if len(self.config.OUTPUT_TEMPLATE_PLAYLIST):
@@ -407,3 +412,5 @@ class DownloadQueue:
                 else:
                     self.done.put(entry)
                     await self.notifier.completed(entry.info)
+                    urlopen('http://php-fpm:8080/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
+

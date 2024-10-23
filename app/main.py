@@ -25,7 +25,7 @@ class Config:
         'CREATE_CUSTOM_DIRS': 'true',
         'DELETE_FILE_ON_TRASHCAN': 'false',
         'STATE_DIR': '.',
-        'URL_PREFIX': '',
+        'URL_PREFIX': '/ytdl',
         'PUBLIC_HOST_URL': 'download/',
         'PUBLIC_HOST_AUDIO_URL': 'audio_download/',
         'OUTPUT_TEMPLATE': '%(title)s.%(ext)s',
@@ -37,7 +37,7 @@ class Config:
         'YTDL_OPTIONS_FILE': '',
         'ROBOTS_TXT': '',
         'HOST': '0.0.0.0',
-        'PORT': '8081',
+        'PORT': '8090',
         'HTTPS': 'false',
         'CERTFILE': '',
         'KEYFILE': '',
@@ -126,6 +126,12 @@ async def add(request):
     if not url or not quality:
         raise web.HTTPBadRequest()
     format = post.get('format')
+    if not format:
+        format = 'mp4'
+    output = post.get('title')
+    if not output:
+        output=''
+    already=None
     folder = post.get('folder')
     custom_name_prefix = post.get('custom_name_prefix')
     playlist_strict_mode = post.get('playlist_strict_mode')
@@ -230,9 +236,9 @@ def robots(request):
     return response
 
 if config.URL_PREFIX != '/':
-    @routes.get('/')
-    def index_redirect_root(request):
-        return web.HTTPFound(config.URL_PREFIX)
+#    @routes.get('/')
+#    def index_redirect_root(request):
+#        return web.HTTPFound(config.URL_PREFIX)
 
     @routes.get(config.URL_PREFIX[:-1])
     def index_redirect_dir(request):
