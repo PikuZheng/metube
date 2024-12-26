@@ -412,5 +412,8 @@ class DownloadQueue:
                 else:
                     self.done.put(entry)
                     await self.notifier.completed(entry.info)
-                    urlopen('http://php-fpm:8080/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
+                    try:
+                        urlopen('http://php-fpm:8080/push.php?title=download%20finish&message=' + quote(entry.info.title)).close()
+                    except:
+                        pass
 
