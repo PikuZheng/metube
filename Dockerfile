@@ -15,12 +15,12 @@ COPY Pipfile* docker-entrypoint.sh ./
 
 # Use sed to strip carriage-return characters from the entrypoint script (in case building on Windows)
 # Install dependencies
-RUN wget -qO- https://github.com/yifeikong/curl-impersonate/releases/download/v0.7.0/libcurl-impersonate-v0.7.0.$(uname -m)-linux-musl.tar.gz |tar xvz -C /lib
+RUN wget -qO- https://github.com/yifeikong/curl-impersonate/releases/download/v0.8.2/libcurl-impersonate-v0.8.2.$(uname -m)-linux-musl.tar.gz |tar xvz -C /lib
 RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     chmod +x docker-entrypoint.sh && \
     apk add --update aria2 coreutils shadow su-exec curl && \
-    apk add --update --virtual .build-deps gcc g++ musl-dev curl-dev&& \
-    pip install --no-cache-dir pipenv curl_cffi==0.5.10&& \
+    apk add --update --virtual .build-deps gcc g++ musl-dev && \
+    pip install --no-cache-dir pipenv curl_cffi==0.7.1&& \
     pipenv install --system --deploy --clear && \
     pip uninstall pipenv -y && \
     apk del .build-deps && \
