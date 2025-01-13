@@ -217,4 +217,8 @@
     </table>
   </div>
 
+<div class="footer text-center py-3">
+  <small *ngIf="versionInfo">{{ versionInfo }}</small>
+  <small *ngIf="!versionInfo">Loading version info...</small>
+</div>
 </main><!-- /.container -->
