@@ -35,6 +35,7 @@ export class AppComponent implements AfterViewInit {
 
   @ViewChild('queueMasterCheckbox') queueMasterCheckbox: MasterCheckboxComponent;
   @ViewChild('queueDelSelected') queueDelSelected: ElementRef;
+  @ViewChild('queueDownloadSelected') queueDownloadSelected: ElementRef;
   @ViewChild('doneMasterCheckbox') doneMasterCheckbox: MasterCheckboxComponent;
   @ViewChild('doneDelSelected') doneDelSelected: ElementRef;
   @ViewChild('doneClearCompleted') doneClearCompleted: ElementRef;
@@ -184,6 +185,7 @@ export class AppComponent implements AfterViewInit {
 
   queueSelectionChanged(checked: number) {
     this.queueDelSelected.nativeElement.disabled = checked == 0;
+    this.queueDownloadSelected.nativeElement.disabled = checked == 0;
   }
 
   doneSelectionChanged(checked: number) {
@@ -230,6 +232,10 @@ export class AppComponent implements AfterViewInit {
 
   delDownload(where: string, id: string) {
     this.downloads.delById(where, [id]).subscribe();
+  }
+
+  startSelectedDownloads(where: string){
+    this.downloads.startByFilter(where, dl => dl.checked).subscribe();
   }
 
   delSelectedDownloads(where: string) {

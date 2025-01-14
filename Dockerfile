@@ -18,7 +18,7 @@ COPY Pipfile* docker-entrypoint.sh ./
 RUN wget -qO- https://github.com/yifeikong/curl-impersonate/releases/download/v0.8.2/libcurl-impersonate-v0.8.2.$(uname -m)-linux-musl.tar.gz |tar xvz -C /lib
 RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     chmod +x docker-entrypoint.sh && \
-    apk add --update aria2 coreutils shadow su-exec curl && \
+    apk add --update aria2 coreutils shadow su-exec curl tini && \
     apk add --update --virtual .build-deps gcc g++ musl-dev && \
     pip install --no-cache-dir pipenv curl_cffi==0.7.1&& \
     pipenv install --system --deploy --clear && \
@@ -44,4 +44,4 @@ ENV STATE_DIR /downloads/.metube
 ENV TEMP_DIR /downloads
 VOLUME /downloads
 EXPOSE 8090
-CMD [ "./docker-entrypoint.sh" ]
+ENTRYPOINT ["/sbin/tini", "-g", "--", "./docker-entrypoint.sh"]
