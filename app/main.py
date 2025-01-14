@@ -12,6 +12,7 @@ import json
 import pathlib
 
 from ytdl import DownloadQueueNotifier, DownloadQueue
+from yt_dlp.networking.impersonate import ImpersonateTarget
 from yt_dlp.version import __version__ as yt_dlp_version
 
 log = logging.getLogger('main')
@@ -84,6 +85,9 @@ class Config:
                 log.error('YTDL_OPTIONS_FILE contents is invalid')
                 sys.exit(1)
             self.YTDL_OPTIONS.update(opts)
+
+        if impersonate_data := self.YTDL_OPTIONS.get("impersonate"):
+            self.YTDL_OPTIONS["impersonate"] = ImpersonateTarget(**impersonate_data)
 
 config = Config()
 
