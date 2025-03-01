@@ -41,6 +41,7 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('doneClearCompleted') doneClearCompleted: ElementRef;
   @ViewChild('doneClearFailed') doneClearFailed: ElementRef;
   @ViewChild('doneRetryFailed') doneRetryFailed: ElementRef;
+  @ViewChild('doneDownloadSelected') doneDownloadSelected: ElementRef;
 
   faTrashAlt = faTrashAlt;
   faCheckCircle = faCheckCircle;
@@ -190,6 +191,7 @@ export class AppComponent implements AfterViewInit {
 
   doneSelectionChanged(checked: number) {
     this.doneDelSelected.nativeElement.disabled = checked == 0;
+    this.doneDownloadSelected.nativeElement.disabled = checked == 0;
   }
 
   setQualities() {
@@ -254,6 +256,20 @@ export class AppComponent implements AfterViewInit {
     this.downloads.done.forEach((dl, key) => {
       if (dl.status === 'error') {
         this.retryDownload(key, dl);
+      }
+    });
+  }
+
+  downloadSelectedFiles() {
+    this.downloads.done.forEach((dl, key) => {
+      if (dl.status === 'finished' && dl.checked) {
+        const link = document.createElement('a');
+        link.href = this.buildDownloadLink(dl);
+        link.setAttribute('download', dl.filename);
+        link.setAttribute('target', '_self');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
     });
   }
