@@ -17,8 +17,11 @@ COPY Pipfile* docker-entrypoint.sh ./
 RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     chmod +x docker-entrypoint.sh && \
     apk add --update ffmpeg aria2 coreutils shadow su-exec curl tini && \
-    apk add --update --virtual .build-deps gcc g++ musl-dev && \
-    pip install --no-cache-dir pipenv && \
+    apk add --update --virtual .build-deps build-base gcc g++ musl-dev && \
+    curl -s https://api.github.com/repos/lexiforest/curl-impersonate/releases/latest | \
+     grep '"browser_download_url":' | grep "$(uname -m)-linux-musl.tar.gz" | grep 'libcurl-' | grep -o 'https://[^"]*' | \
+     xargs wget -qO- |tar xvz -C /lib && \
+    pip install --no-cache-dir pipenv curl_cffi==0.10 && \
     pipenv install --system --deploy --clear && \
     pip uninstall pipenv -y && \
     apk del .build-deps && \
