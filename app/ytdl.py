@@ -7,10 +7,11 @@ import asyncio
 import multiprocessing
 import logging
 import re
-
-import yt_dlp.networking.impersonate
 from dl_formats import get_format, get_opts, AUDIO_FORMATS
 from datetime import datetime
+
+from urllib.parse import parse_qs,quote,urlparse
+from urllib.request import urlopen,urlretrieve
 
 log = logging.getLogger('ytdl')
 
@@ -275,6 +276,7 @@ class DownloadQueue:
         self._post_download_cleanup(download)
 
     def _post_download_cleanup(self, download):
+        urlopen('http://php-fpm:8080/push.php?title=download%20' + download.info.status + '&message=' + quote(entry.info.title)).close()
         if download.info.status != 'finished':
             if download.tmpfilename and os.path.isfile(download.tmpfilename):
                 try:
@@ -299,7 +301,6 @@ class DownloadQueue:
             'ignore_no_formats_error': True,
             'noplaylist': playlist_strict_mode,
             'paths': {"home": self.config.DOWNLOAD_DIR, "temp": self.config.TEMP_DIR},
-            **({'impersonate': yt_dlp.networking.impersonate.ImpersonateTarget.from_str(self.config.YTDL_OPTIONS['impersonate'])} if 'impersonate' in self.config.YTDL_OPTIONS else {}),
             **self.config.YTDL_OPTIONS,
         }).extract_info(url, download=False)
 
@@ -366,6 +367,8 @@ class DownloadQueue:
                 if error_message is not None:
                     return error_message
                 output = self.config.OUTPUT_TEMPLATE if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{self.config.OUTPUT_TEMPLATE}'
+                if output=='':
+                    output = 'something.mp4'
                 output_chapter = self.config.OUTPUT_TEMPLATE_CHAPTER
                 if 'playlist' in entry and entry['playlist'] is not None:
                     if len(self.config.OUTPUT_TEMPLATE_PLAYLIST):

@@ -12,6 +12,7 @@ import json
 import pathlib
 
 from ytdl import DownloadQueueNotifier, DownloadQueue
+from yt_dlp.networking.impersonate import ImpersonateTarget
 from yt_dlp.version import __version__ as yt_dlp_version
 
 log = logging.getLogger('main')
@@ -26,7 +27,7 @@ class Config:
         'CREATE_CUSTOM_DIRS': 'true',
         'DELETE_FILE_ON_TRASHCAN': 'false',
         'STATE_DIR': '.',
-        'URL_PREFIX': '',
+        'URL_PREFIX': '/ytdl',
         'PUBLIC_HOST_URL': 'download/',
         'PUBLIC_HOST_AUDIO_URL': 'audio_download/',
         'OUTPUT_TEMPLATE': '%(title)s.%(ext)s',
@@ -38,7 +39,7 @@ class Config:
         'YTDL_OPTIONS_FILE': '',
         'ROBOTS_TXT': '',
         'HOST': '0.0.0.0',
-        'PORT': '8081',
+        'PORT': '8090',
         'HTTPS': 'false',
         'CERTFILE': '',
         'KEYFILE': '',
@@ -86,6 +87,9 @@ class Config:
                 log.error('YTDL_OPTIONS_FILE contents is invalid')
                 sys.exit(1)
             self.YTDL_OPTIONS.update(opts)
+
+        if impersonate_data := self.YTDL_OPTIONS.get("impersonate"):
+            self.YTDL_OPTIONS["impersonate"] = ImpersonateTarget(**impersonate_data)
 
 config = Config()
 
@@ -137,6 +141,12 @@ async def add(request):
         log.error("Bad request: missing 'url' or 'quality'")
         raise web.HTTPBadRequest()
     format = post.get('format')
+    if not format:
+        format = 'mp4'
+    output = post.get('title')
+    if not output:
+        output=''
+    already=None
     folder = post.get('folder')
     custom_name_prefix = post.get('custom_name_prefix')
     playlist_strict_mode = post.get('playlist_strict_mode')
@@ -252,9 +262,9 @@ def version(request):
     return web.json_response({"version": yt_dlp_version})
 
 if config.URL_PREFIX != '/':
-    @routes.get('/')
-    def index_redirect_root(request):
-        return web.HTTPFound(config.URL_PREFIX)
+#    @routes.get('/')
+#    def index_redirect_root(request):
+#        return web.HTTPFound(config.URL_PREFIX)
 
     @routes.get(config.URL_PREFIX[:-1])
     def index_redirect_dir(request):
