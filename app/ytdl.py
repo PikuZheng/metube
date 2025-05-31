@@ -276,7 +276,7 @@ class DownloadQueue:
         self._post_download_cleanup(download)
 
     def _post_download_cleanup(self, download):
-        urlopen('http://php-fpm:8080/push.php?title=download%20' + download.info.status + '&message=' + quote(entry.info.title)).close()
+        urlopen('http://php-fpm:8080/push.php?title=download%20' + download.info.status + '&message=' + quote(download.info.title)).close()
         if download.info.status != 'finished':
             if download.tmpfilename and os.path.isfile(download.tmpfilename):
                 try:
