@@ -301,7 +301,6 @@ class DownloadQueue:
             'ignore_no_formats_error': True,
             'noplaylist': playlist_strict_mode,
             'paths': {"home": self.config.DOWNLOAD_DIR, "temp": self.config.TEMP_DIR},
-            **({'impersonate': yt_dlp.networking.impersonate.ImpersonateTarget.from_str(self.config.YTDL_OPTIONS['impersonate'])} if 'impersonate' in self.config.YTDL_OPTIONS else {}),
             **self.config.YTDL_OPTIONS,
         }).extract_info(url, download=False)
 
