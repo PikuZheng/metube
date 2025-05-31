@@ -22,7 +22,7 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     curl -s https://api.github.com/repos/lexiforest/curl-impersonate/releases/latest | \
      grep '"browser_download_url":' | grep "$(uname -m)-linux-musl.tar.gz" | grep 'libcurl-' | grep -o 'https://[^"]*' | \
      xargs wget -qO- |tar xvz -C /lib && \
-    pip install --no-cache-dir pipenv curl_cffi==0.10 && \
+    pip install --no-cache-dir pipenv && \
     pipenv install --system --deploy --clear && \
     pip uninstall pipenv -y && \
     apk del .build-deps && \
@@ -31,8 +31,8 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
 
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
-COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1.1 /ffprobe /usr/local/bin/
 
 RUN chmod -R 755 ./app && \
     chmod 755 ./docker-entrypoint.sh

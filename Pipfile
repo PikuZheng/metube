@@ -11,7 +11,7 @@ aiohttp = "*"
 python-socketio = "~=5.0"
 yt-dlp = "*"
 mutagen = "*"
-curl-cffi = "*"
+curl-cffi = "0.10.0"
 
 [requires]
 python_version = "3.11"

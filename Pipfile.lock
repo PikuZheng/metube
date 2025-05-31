@@ -227,21 +227,21 @@
             "version": "==1.17.1"
         },
         "curl-cffi": {
-            "hashes": [
-                "sha256:01ca9b9afd66f6e18f72a2c4c7046dbf419591f53f31af5396d2c2697d23bf6a",
-                "sha256:2ee56b0513fb31f9ea9372a91f78fdb9bf6895062a0ed175d9fe3cc21fb2ef96",
-                "sha256:54efb8f4b3a9b0ae80edd824eab6d4e51cc1ab6299d0ef33588522b2278044a6",
-                "sha256:709ef31e1e2489c60349bed97ccf513cbb7ca64c46d31604957000ba687dcdab",
-                "sha256:923425b54c4caed99ed094ec28776045faae9c470d19854f9bdfce8157bee76f",
-                "sha256:bf63097a56c7891a3c7347f8030f4952ef8ad83816551d8c4f61cfdc1ece2c0a",
-                "sha256:c6927292d5ec1436da5bf254b1eb95e91de6e5c93a1d2a705a35602c6edd0626",
-                "sha256:e141eadf872fa3c9fc983df49d5bfb314a25487c0c1a24c8a413defea83810e4",
-                "sha256:e6d7aefd659a614bebaafd8a895d160b65429ce49a7460c99014424a04ac30f3",
-                "sha256:e7d3d88f56281335c73c9da4e74e30a14089b552a03a7b73ff1787976fd873a8"
-            ],
+            "version": "==0.10.0",
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==0.11.1"
+            "hashes": [
+                "sha256:15053d01c6a3e3c4c5331ce9e07e1dc31ca5aa063babca05d18b1b5aad369fac",
+                "sha256:3969e4260ad4dab638fb6dbe349623f9f5f022435c7fd21daf760231380367fa",
+                "sha256:458f53c41bd76d90d8974d60c3a8a0dd902a1af1f9056215cf24f454bcedc6fd",
+                "sha256:cfc74f09e44d2d8d61b8e8fda3a7004b5bc0217a703fbbe9e16ef8caa1f3d4e4",
+                "sha256:f03f4b17dc679c82bd3c946feb1ad38749b2ad731d7c26daefaac857d1c72fd9",
+                "sha256:f1b0c7b7b81afca15a0e56c593d3c2bdcd4fd4c9ca49b9ded5b9d8076ba78ff9",
+                "sha256:04b1d23f0f54f94b8298ed417e6bece85a635d674723cde2b155da686efbf78f",
+                "sha256:1e60b8ecc80bfb0da4ff73ac9d194e80482b50ecbb8aefec1b0edaf45fafd80e",
+                "sha256:59389773a1556e087120e91eac1e33f84f1599d853e1bc168b153e4cdf360002",
+                "sha256:3e37b35268ca58492f54ed020ae4b50c33ee0debad4145db9f746f04ed466eb0"
+            ]
         },
         "frozenlist": {
             "hashes": [
