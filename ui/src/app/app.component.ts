@@ -1,9 +1,10 @@
 import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { faTrashAlt, faCheckCircle, faTimesCircle, IconDefinition } from '@fortawesome/free-regular-svg-icons';
-import { faRedoAlt, faSun, faMoon, faCircleHalfStroke, faCheck, faExternalLinkAlt, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faRedoAlt, faSun, faMoon, faCircleHalfStroke, faCheck, faExternalLinkAlt, faDownload, faFileImport, faFileExport, faCopy, faClock, faTachometerAlt } from '@fortawesome/free-solid-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { CookieService } from 'ngx-cookie-service';
-import { map, Observable, of } from 'rxjs';
+import { map, Observable, of, distinctUntilChanged } from 'rxjs';
 
 import { Download, DownloadsService, Status } from './downloads.service';
 import { MasterCheckboxComponent } from './master-checkbox.component';
@@ -12,9 +13,10 @@ import { Theme, Themes } from './theme';
 import {KeyValue} from "@angular/common";
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.sass'],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.sass'],
+    standalone: false
 })
 export class AppComponent implements AfterViewInit {
   addUrl: string;
@@ -37,7 +39,16 @@ export class AppComponent implements AfterViewInit {
   batchImportStatus = '';
   importInProgress = false;
   cancelImportFlag = false;
-  versionInfo: string | null = null;
+  ytDlpVersion: string | null = null;
+  metubeVersion: string | null = null;
+  isAdvancedOpen = false;
+
+  // Download metrics
+  activeDownloads = 0;
+  queuedDownloads = 0;
+  completedDownloads = 0;
+  failedDownloads = 0;
+  totalSpeed = 0;
 
   @ViewChild('queueMasterCheckbox') queueMasterCheckbox: MasterCheckboxComponent;
   @ViewChild('queueDelSelected') queueDelSelected: ElementRef;
@@ -59,6 +70,12 @@ export class AppComponent implements AfterViewInit {
   faCircleHalfStroke = faCircleHalfStroke;
   faDownload = faDownload;
   faExternalLinkAlt = faExternalLinkAlt;
+  faFileImport = faFileImport;
+  faFileExport = faFileExport;
+  faCopy = faCopy;
+  faGithub = faGithub;
+  faClock = faClock;
+  faTachometerAlt = faTachometerAlt;
 
   constructor(public downloads: DownloadsService, private cookieService: CookieService, private http: HttpClient) {
     this.format = cookieService.get('metube_format') || 'any';
@@ -68,6 +85,18 @@ export class AppComponent implements AfterViewInit {
     this.autoStart = cookieService.get('metube_auto_start') !== 'false';
 
     this.activeTheme = this.getPreferredTheme(cookieService);
+
+    // Subscribe to download updates
+    this.downloads.queueChanged.subscribe(() => {
+      this.updateMetrics();
+    });
+    this.downloads.doneChanged.subscribe(() => {
+      this.updateMetrics();
+    });
+    // Subscribe to real-time updates
+    this.downloads.updated.subscribe(() => {
+      this.updateMetrics();
+    });
   }
 
   ngOnInit() {
@@ -130,16 +159,19 @@ export class AppComponent implements AfterViewInit {
   }
 
   getMatchingCustomDir() : Observable<string[]> {
-    return this.downloads.customDirsChanged.asObservable().pipe(map((output) => {
-      // Keep logic consistent with app/ytdl.py
-      if (this.isAudioType()) {
-        console.debug("Showing audio-specific download directories");
-        return output["audio_download_dir"];
-      } else {
-        console.debug("Showing default download directories");
-        return output["download_dir"];
-      }
-    }));
+    return this.downloads.customDirsChanged.asObservable().pipe(
+      map((output) => {
+        // Keep logic consistent with app/ytdl.py
+        if (this.isAudioType()) {
+          console.debug("Showing audio-specific download directories");
+          return output["audio_download_dir"];
+        } else {
+          console.debug("Showing default download directories");
+          return output["download_dir"];
+        }
+      }),
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+    );
   }
 
   getConfiguration() {
@@ -441,14 +473,33 @@ export class AppComponent implements AfterViewInit {
   fetchVersionInfo(): void {
     const baseUrl = `${window.location.origin}${window.location.pathname.replace(/\/[^\/]*$/, '/')}`;
     const versionUrl = `${baseUrl}version`;
-    this.http.get<{ version: string}>(versionUrl)
+    this.http.get<{ 'yt-dlp': string, version: string }>(versionUrl)
       .subscribe({
         next: (data) => {
-          this.versionInfo = `yt-dlp version: ${data.version}`;
+          this.ytDlpVersion = data['yt-dlp'];
+          this.metubeVersion = data.version;
         },
         error: () => {
-          this.versionInfo = '';
+          this.ytDlpVersion = null;
+          this.metubeVersion = null;
         }
       });
+  }
+
+  toggleAdvanced() {
+    this.isAdvancedOpen = !this.isAdvancedOpen;
+  }
+
+  private updateMetrics() {
+    this.activeDownloads = Array.from(this.downloads.queue.values()).filter(d => d.status === 'downloading' || d.status === 'preparing').length;
+    this.queuedDownloads = Array.from(this.downloads.queue.values()).filter(d => d.status === 'pending').length;
+    this.completedDownloads = Array.from(this.downloads.done.values()).filter(d => d.status === 'finished').length;
+    this.failedDownloads = Array.from(this.downloads.done.values()).filter(d => d.status === 'error').length;
+    
+    // Calculate total speed from downloading items
+    const downloadingItems = Array.from(this.downloads.queue.values())
+      .filter(d => d.status === 'downloading');
+    
+    this.totalSpeed = downloadingItems.reduce((total, item) => total + (item.speed || 0), 0);
   }
 }
