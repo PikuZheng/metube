@@ -73,6 +73,8 @@ class Download:
         self.output_template_chapter = output_template_chapter
         self.format = get_format(format, quality)
         self.ytdl_opts = get_opts(format, quality, ytdl_opts)
+        if "impersonate" in self.ytdl_opts:
+            self.ytdl_opts["impersonate"] = yt_dlp.networking.impersonate.ImpersonateTarget.from_str(self.ytdl_opts["impersonate"])
         self.info = info
         self.canceled = False
         self.tmpfilename = None
@@ -324,6 +326,7 @@ class DownloadQueue:
             'noplaylist': playlist_strict_mode,
             'paths': {"home": self.config.DOWNLOAD_DIR, "temp": self.config.TEMP_DIR},
             **self.config.YTDL_OPTIONS,
+            **({'impersonate': yt_dlp.networking.impersonate.ImpersonateTarget.from_str(self.config.YTDL_OPTIONS['impersonate'])} if 'impersonate' in self.config.YTDL_OPTIONS else {}),
         }).extract_info(url, download=False)
 
     def __calc_download_path(self, quality, format, folder):
@@ -413,31 +416,8 @@ class DownloadQueue:
             log.debug('Processing as a video')
             key = entry.get('webpage_url') or entry['url']
             if not self.queue.exists(key):
-                dl = DownloadInfo(entry['id'], entry.get('title') or entry['id'], key, quality, format, folder, custom_name_prefix, error)
-                dldirectory, error_message = self.__calc_download_path(quality, format, folder)
-                if error_message is not None:
-                    return error_message
-                output = self.config.OUTPUT_TEMPLATE if len(custom_name_prefix) == 0 else f'{custom_name_prefix}.{self.config.OUTPUT_TEMPLATE}'
-                if output=='':
-                    output = 'something.mp4'
-                output_chapter = self.config.OUTPUT_TEMPLATE_CHAPTER
-                if 'playlist' in entry and entry['playlist'] is not None:
-                    if len(self.config.OUTPUT_TEMPLATE_PLAYLIST):
-                        output = self.config.OUTPUT_TEMPLATE_PLAYLIST
-                    for property, value in entry.items():
-                        if property.startswith("playlist"):
-                            output = output.replace(f"%({property})s", str(value))
-                ytdl_options = dict(self.config.YTDL_OPTIONS)
-                if playlist_item_limit > 0:
-                    log.info(f'playlist limit is set. Processing only first {playlist_item_limit} entries')
-                    ytdl_options['playlistend'] = playlist_item_limit
-                if auto_start is True:
-                    download = Download(dldirectory, self.config.TEMP_DIR, output, output_chapter, quality, format, ytdl_options, dl)
-                    self.queue.put(download)
-                    asyncio.create_task(self.__start_download(download))
-                else:
-                    self.pending.put(Download(dldirectory, self.config.TEMP_DIR, output, output_chapter, quality, format, ytdl_options, dl))
-                await self.notifier.added(dl)
+                dl = DownloadInfo(entry['id'], entry.get('title') or entry['id'], key, quality, format, folder, custom_name_prefix, error, entry, playlist_item_limit)
+                await self.__add_download(dl, auto_start)
             return {'status': 'ok'}
         return {'status': 'error', 'msg': f'Unsupported resource "{etype}"'}
 

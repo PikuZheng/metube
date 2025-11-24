@@ -23,9 +23,6 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     curl -s https://api.github.com/repos/lexiforest/curl-impersonate/releases/latest | \
      grep '"browser_download_url":' | grep "$(uname -m)-linux-musl.tar.gz" | grep 'libcurl-' | grep -o 'https://[^"]*' | \
      xargs wget -qO- |tar xvz -C /lib && \
-    pip install --no-cache-dir pipenv && \
-    pipenv install --system --deploy --clear && \
-    pip uninstall pipenv -y && \
     apk del .build-deps && \
     rm -rf /var/cache/apk/* && \
     mkdir /.cache && chmod 777 /.cache
