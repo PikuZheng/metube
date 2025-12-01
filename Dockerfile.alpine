@@ -1,4 +1,4 @@
-FROM node:lts-alpine as builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /metube
 COPY ui ./
@@ -7,21 +7,33 @@ RUN npm ci && \
     node_modules/.bin/ng build --configuration production
 
 
-FROM alpine:edge
+FROM alpine:3.22
 
 WORKDIR /app
 
-COPY Pipfile* docker-entrypoint.sh ./
+COPY pyproject.toml uv.lock docker-entrypoint.sh ./
 
-RUN chmod +x docker-entrypoint.sh && \
-    apk add --update --no-cache ffmpeg aria2 coreutils su-exec && \
-    apk add --update --no-cache python3 py3-pip py3-gevent py3-aiohttp py3-mutagen py3-pycryptodomex py3-websockets py3-brotli py3-certifi python3-gdbm && \
-    pip install --no-cache-dir python_socketio yt_dlp && \
+# Install dependencies
+RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
+    chmod +x docker-entrypoint.sh && \
+    apk add --update aria2 coreutils shadow su-exec curl tini deno && \
+    apk add --update --virtual .build-deps build-base gcc g++ musl-dev uv && \
+    uv python install 3.13 && cp -R $(uv python dir)/$(ls $(uv python dir))/* /usr/local &&\
+    UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen --no-dev --compile-bytecode && \
+    curl -s https://api.github.com/repos/lexiforest/curl-impersonate/releases/latest | \
+     grep '"browser_download_url":' | grep "$(uname -m)-linux-musl.tar.gz" | grep 'libcurl-' | grep -o 'https://[^"]*' | \
+     xargs wget -qO- |tar xvz -C /lib && \
+    apk del .build-deps && \
+    rm -rf /var/cache/apk/* && \
     mkdir /.cache && chmod 777 /.cache
 
-COPY favicon ./favicon
 COPY app ./app
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
+COPY --from=mwader/static-ffmpeg:8.0.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.0.1 /ffprobe /usr/local/bin/
+
+RUN chmod -R 755 ./app && \
+    chmod 755 ./docker-entrypoint.sh
 
 ENV UID=1000
 ENV GID=1000
@@ -29,6 +41,12 @@ ENV UMASK=022
 
 ENV DOWNLOAD_DIR /downloads
 ENV STATE_DIR /downloads/.metube
+ENV TEMP_DIR /downloads
 VOLUME /downloads
-EXPOSE 8081
-CMD [ "./docker-entrypoint.sh" ]
+EXPOSE 8090
+
+# Add build-time argument for version
+ARG VERSION=dev
+ENV METUBE_VERSION=$VERSION
+
+ENTRYPOINT ["/sbin/tini", "-g", "--", "./docker-entrypoint.sh"]
